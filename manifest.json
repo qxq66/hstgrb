@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Host Grabber MV3",
-  "version": "1.2.0",
-  "description": "Schneller regelbasierter Download von Originalbildern ohne Rekodierung.",
+  "version": "1.4.0",
+  "description": "Hoster-vorgefilterter Originalbild-Downloader mit additivem Regelimport.",
   "minimum_chrome_version": "109",
   "permissions": [
     "activeTab",
@@ -38,5 +38,17 @@
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  },
+  "host_permissions": [
+    "https://imx.to/*",
+    "https://www.imx.to/*",
+    "https://img.yt/*",
+    "https://www.img.yt/*",
+    "https://pixhost.cc/*",
+    "https://www.pixhost.cc/*",
+    "https://pixhost.to/*",
+    "https://www.pixhost.to/*",
+    "https://pixho.st/*",
+    "https://www.pixho.st/*"
+  ]
 }

@@ -1,0 +1,94 @@
+[
+  {
+    "id": "imx-thumb",
+    "name": "IMX.to – Thumbnail direkt umwandeln",
+    "enabled": true,
+    "match": {
+      "field": "imageUrl",
+      "pattern": "^https?://t[0-9]+\\.imx\\.to/t/",
+      "flags": "i"
+    },
+    "source": "imageUrl",
+    "resolver": {
+      "type": "direct"
+    },
+    "transforms": [
+      {
+        "type": "regex-replace",
+        "pattern": "^https?://t[0-9]+\\.imx\\.to/t/",
+        "flags": "i",
+        "replace": "https://image.imx.to/u/i/"
+      },
+      {
+        "type": "replace",
+        "search": "/u/t/",
+        "replace": "/u/i/",
+        "all": false
+      }
+    ]
+  },
+  {
+    "id": "imx-link",
+    "name": "IMX.to – Landingpage",
+    "enabled": true,
+    "match": {
+      "field": "linkUrl",
+      "pattern": "^https?://(?:www\\.)?(?:imx\\.to|img\\.yt)/(?:i/[A-Za-z0-9_-]+|img-[A-Za-z0-9_-]+)(?:\\.html)?(?:[?#].*)?$",
+      "flags": "i"
+    },
+    "source": "linkUrl",
+    "resolver": {
+      "type": "fetch-regex",
+      "method": "POST",
+      "body": "imgContinue=Continue+to+your+image...",
+      "contentType": "application/x-www-form-urlencoded",
+      "pattern": "<div[^>]*style=[\"\\'][^\"\\']*text-align\\s*:\\s*center[^\"\\']*[\"\\'][^>]*>\\s*<a[^>]+href=[\"\\']([^\"\\']+)",
+      "group": 1,
+      "flags": "i"
+    },
+    "transforms": [
+      {
+        "type": "html-entities"
+      }
+    ]
+  },
+  {
+    "id": "pixhost-thumb",
+    "name": "Pixhost – Thumbnail direkt umwandeln",
+    "enabled": true,
+    "match": {
+      "field": "imageUrl",
+      "pattern": "^https?://t([0-9]+)\\.(pixhost\\.(?:cc|to)|pixho\\.st)/thumbs/",
+      "flags": "i"
+    },
+    "source": "imageUrl",
+    "resolver": {
+      "type": "direct"
+    },
+    "transforms": [
+      {
+        "type": "regex-replace",
+        "pattern": "^https?://t([0-9]+)\\.(pixhost\\.(?:cc|to)|pixho\\.st)/thumbs/",
+        "flags": "i",
+        "replace": "https://img$1.$2/images/"
+      }
+    ]
+  },
+  {
+    "id": "pixhost-link",
+    "name": "Pixhost – Landingpage",
+    "enabled": true,
+    "match": {
+      "field": "linkUrl",
+      "pattern": "^https?://(?:www\\.)?(?:pixhost\\.(?:cc|to)|pixho\\.st)/show/[0-9]+/[^/?#]+(?:[?#].*)?$",
+      "flags": "i"
+    },
+    "source": "linkUrl",
+    "resolver": {
+      "type": "fetch-css",
+      "selector": "#image",
+      "attribute": "src"
+    },
+    "transforms": []
+  }
+]
