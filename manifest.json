@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Host Grabber MV3",
-  "version": "1.4.0",
-  "description": "Hoster-vorgefilterter Originalbild-Downloader mit additivem Regelimport.",
-  "minimum_chrome_version": "109",
+  "version": "1.5.0",
+  "description": "Hoster-vorgefilterter Originalbild-Downloader mit eigenständigem Download-Manager.",
+  "minimum_chrome_version": "116",
   "permissions": [
     "activeTab",
     "scripting",
     "downloads",
+    "downloads.open",
     "storage",
     "offscreen",
     "contextMenus"
@@ -20,7 +21,7 @@
     "service_worker": "worker.js"
   },
   "action": {
-    "default_title": "Host Grabber öffnen",
+    "default_title": "Host Grabber – Bilder ermitteln",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
