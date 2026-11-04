@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Host Grabber – Download-Manager</title>
+<link rel="stylesheet" href="manager.css">
+</head>
+<body>
+<header>
+  <div class="brand"><span class="mark">HG</span><div><h1>Download-Manager</h1><small id="summary">Keine aktiven Downloads</small></div></div>
+  <div class="actions">
+    <button id="pauseAll">Alle pausieren</button>
+    <button id="resumeAll">Alle starten</button>
+    <button id="retryFailed">Fehlgeschlagene neu starten</button>
+    <button id="clearCompleted">Fertige entfernen</button>
+  </div>
+</header>
+<main>
+  <div class="table-head">
+    <span class="col-name">Name</span><span class="col-url">Url</span><span class="col-progress">Fortschritt</span><span class="col-size">Grösse</span>
+  </div>
+  <div id="groups"></div>
+  <div id="empty" class="empty">Keine Downloads vorhanden.</div>
+</main>
+<script src="manager.js"></script>
+</body>
+</html>
