@@ -1,0 +1,12 @@
+.table-head,.row{grid-template-columns:minmax(180px,1.1fr) minmax(280px,2fr) 180px 110px 72px}
+.group-head{grid-template-columns:36px minmax(180px,1.1fr) minmax(280px,2fr) 180px 110px 72px}
+.row,.group-head{user-select:none}
+.row .acts,.group-head .acts{display:flex;gap:4px;justify-content:flex-end}
+.acts button{min-height:26px;padding:2px 7px;font-size:12px}
+.acts .del-row:hover,.acts .del-group:hover{border-color:var(--bad);color:var(--bad)}
+.group-title input{margin-right:8px;vertical-align:middle}
+.row.completed .name{color:var(--ok)}
+.row.completed .bar>span{background:var(--ok)}
+.row.failed .bar>span{background:var(--bad)}
+.row.selected{background:var(--accent-dim)}
+.notice-line{color:var(--warn);margin-left:10px}

@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Host Grabber – Download-Manager</title>
 <link rel="stylesheet" href="manager.css">
+<link rel="stylesheet" href="manager-extra.css">
 </head>
 <body>
 <header>
-  <div class="brand"><span class="mark">HG</span><div><h1>Download-Manager</h1><small id="summary">Keine Downloads</small></div></div>
+  <div class="brand"><span class="mark">HG</span><div><h1>Download-Manager</h1><small id="summary">Keine Downloads</small> <small id="notice" class="notice-line"></small></div></div>
   <div class="actions">
     <button id="pauseAll">Auswahl pausieren</button>
     <button id="resumeAll">Auswahl starten</button>
@@ -19,7 +20,7 @@
 </header>
 <main>
   <div class="table-head">
-    <span class="col-name">Name</span><span class="col-url">Url</span><span class="col-progress">Fortschritt</span><span class="col-size">Grösse</span>
+    <span class="col-name">Name</span><span class="col-url">Url</span><span class="col-progress">Fortschritt</span><span class="col-size">Grösse</span><span></span>
   </div>
   <div id="groups"></div>
   <div id="empty" class="empty">Keine Downloads vorhanden.</div>

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Host Grabber MV3",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Hoster-vorgefilterter Originalbild-Downloader mit eigenständigem Download-Manager.",
   "minimum_chrome_version": "116",
   "permissions": [
@@ -18,7 +18,7 @@
     "https://*/*"
   ],
   "background": {
-    "service_worker": "worker.js"
+    "service_worker": "background.js"
   },
   "action": {
     "default_title": "Host Grabber – Bilder ermitteln",
