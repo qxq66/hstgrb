@@ -1,28 +1,14 @@
 'use strict';
-// Ergänzungen/Korrekturen zu worker.js (wird per background.js nach worker.js geladen)
-
-const DEFAULTS_V2 = {
-  concurrency: 1,
-  naming: 'numbered',
-  prefix: '',
-  folder: '',
-  folderMode: 'title',
-  managerStartMode: 'paused'
-};
+const DEFAULTS_V2 = { concurrency: 1, naming: 'numbered', prefix: '', folder: '', folderMode: 'title', managerStartMode: 'paused' };
 Object.assign(self.HG.DEFAULT_SETTINGS, DEFAULTS_V2);
 
-// Einmalige Migration bestehender Installationen auf die neuen Standardwerte
 async function migrateDefaults() {
   const x = await chrome.storage.local.get(['settings', 'defaultsV2']);
   if (x.defaultsV2) return;
-  await chrome.storage.local.set({
-    settings: self.HG.settings({ ...(x.settings || {}), ...DEFAULTS_V2 }),
-    defaultsV2: true
-  });
+  await chrome.storage.local.set({ settings: self.HG.settings({ ...(x.settings || {}), ...DEFAULTS_V2 }), defaultsV2: true });
 }
 migrateDefaults().catch(console.error);
 
-// Fehlende Funktion: serielle Warteschlange für Zugriffe auf den Manager-Status
 let serialChain = Promise.resolve();
 let pollTimer = null;
 function serial(fn) {
@@ -33,7 +19,6 @@ function serial(fn) {
 
 const allItems = state => state.groups.flatMap(g => g.items);
 
-// Status aller laufenden Downloads aus chrome.downloads übernehmen
 async function syncState(state) {
   let changed = false;
   for (const item of allItems(state)) {
@@ -64,7 +49,6 @@ async function syncState(state) {
   return changed;
 }
 
-// Wartende Einträge starten, solange die Grenze paralleler Downloads nicht erreicht ist
 async function pump(state) {
   const s = await getSettings();
   let active = allItems(state).filter(x => x.status === 'downloading').length;
@@ -82,9 +66,7 @@ async function pump(state) {
           continue;
         } catch { item.downloadId = null; }
       }
-      item.downloadId = await chrome.downloads.download({
-        url: item.url, filename: item.name, saveAs: false, conflictAction: 'uniquify'
-      });
+      item.downloadId = await chrome.downloads.download({ url: item.url, filename: item.name, saveAs: false, conflictAction: 'uniquify' });
       item.status = 'downloading';
       item.error = '';
       active++;
@@ -100,9 +82,7 @@ async function pump(state) {
 function schedulePolling(state) {
   const need = allItems(state).some(x => x.status === 'downloading' || x.status === 'queued');
   if (need && !pollTimer) {
-    pollTimer = setInterval(() => {
-      serial(async () => refreshState(await loadManager())).catch(() => {});
-    }, 1000);
+    pollTimer = setInterval(() => { serial(async () => refreshState(await loadManager())).catch(() => {}); }, 1000);
   } else if (!need && pollTimer) {
     clearInterval(pollTimer);
     pollTimer = null;
@@ -119,12 +99,9 @@ async function refreshState(state) {
   schedulePolling(state);
 }
 
-chrome.downloads.onChanged.addListener(() => {
-  serial(async () => refreshState(await loadManager())).catch(() => {});
-});
+chrome.downloads.onChanged.addListener(() => { serial(async () => refreshState(await loadManager())).catch(() => {}); });
 serial(async () => refreshState(await loadManager())).catch(() => {});
 
-// Überschreibt die Versionen aus worker.js
 function getManager() {
   return serial(async () => {
     const state = await loadManager();
@@ -160,23 +137,24 @@ function addBatch(items, title, o = {}) {
   });
 }
 
+// Pausieren betrifft nie einen laufenden Download: nur Status "Wartend" <-> "Pausiert".
 function managerAction(action, ids) {
   return serial(async () => {
     const state = await loadManager();
     const all = allItems(state);
     const hasIds = Array.isArray(ids) && ids.length > 0;
-    const selected = hasIds ? all.filter(x => ids.includes(x.id)) : (action === 'removeSelected' ? [] : all);
+    const needsIds = action === 'removeSelected' || action === 'toggleSelected';
+    const selected = hasIds ? all.filter(x => ids.includes(x.id)) : (needsIds ? [] : all);
+    const hasPaused = selected.some(x => x.status === 'paused');
     for (const item of selected) {
       try {
-        if (action === 'pauseAll') {
-          if (item.status === 'downloading' && item.downloadId != null) {
-            await chrome.downloads.pause(item.downloadId);
-            item.status = 'paused';
-          } else if (item.status === 'queued') {
-            item.status = 'paused';
-          }
-        } else if (action === 'resumeAll') {
+        if (action === 'toggleSelected') {
+          if (hasPaused) { if (item.status === 'paused') item.status = 'queued'; }
+          else if (item.status === 'queued') item.status = 'paused';
+        } else if (action === 'startAll' || action === 'resumeAll') {
           if (item.status === 'paused' || item.status === 'failed') item.status = 'queued';
+        } else if (action === 'pauseAll' || action === 'pauseQueued') {
+          if (item.status === 'queued') item.status = 'paused';
         } else if (action === 'retryFailed') {
           if (item.status === 'failed' || item.status === 'completed') {
             if (item.downloadId != null) {

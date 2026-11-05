@@ -4,6 +4,8 @@ let state = { groups: [] };
 const selected = new Set();
 const collapsed = new Set();
 let anchor = null;
+let wasBusy = false;
+let audioCtx = null;
 
 const allItems = () => (state.groups || []).flatMap(g => g.items);
 
@@ -14,6 +16,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (m?.type === 'MANAGER_UPDATE') { state = m.state; prune(); render(); }
   });
 });
+
+function unlockAudio() {
+  try {
+    audioCtx = audioCtx || new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch {}
+}
+document.addEventListener('click', unlockAudio, true);
+document.addEventListener('keydown', unlockAudio, true);
+
+function chime() {
+  unlockAudio();
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  [[660, 0], [880, 0.18], [1175, 0.36]].forEach(([f, d]) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t + d);
+    g.gain.exponentialRampToValueAtTime(0.25, t + d + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.35);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t + d);
+    o.stop(t + d + 0.4);
+  });
+}
 
 function prune() {
   const ids = new Set(allItems().map(x => x.id));
@@ -37,8 +65,19 @@ function removeSelected() {
 }
 
 function bind() {
-  $('pauseAll').onclick = () => act('pauseAll', [...selected]);
-  $('resumeAll').onclick = () => act('resumeAll', [...selected]);
+  $('startAll').onclick = () => {
+    const hasQueued = allItems().some(x => x.status === 'queued');
+    act(hasQueued ? 'pauseQueued' : 'startAll', []);
+  };
+  $('toggleGroups').onclick = () => {
+    const anyCollapsed = state.groups.some(g => collapsed.has(g.id));
+    if (anyCollapsed) collapsed.clear(); else state.groups.forEach(g => collapsed.add(g.id));
+    render();
+  };
+  $('toggleSel').onclick = () => {
+    if (!selected.size) { notice('Nichts ausgewählt'); return; }
+    act('toggleSelected', [...selected]);
+  };
   $('retryFailed').onclick = () => act('retryFailed', [...selected]);
   $('removeSelected').onclick = removeSelected;
   $('clearCompleted').onclick = () => act('clearCompleted', []);
@@ -115,20 +154,39 @@ async function refresh() {
   render();
 }
 
+function updateButtons() {
+  const items = allItems();
+  const queued = items.some(x => x.status === 'queued');
+  const b = $('startAll');
+  b.textContent = queued ? 'Pause All' : 'Start All';
+  b.className = queued ? 'is-pause' : 'is-start';
+  const sel = items.filter(x => selected.has(x.id));
+  const hasP = sel.some(x => x.status === 'paused'), hasQ = sel.some(x => x.status === 'queued');
+  $('toggleSel').textContent = hasP ? 'Auswahl starten' : (hasQ ? 'Auswahl pausieren' : 'Auswahl pausieren/starten');
+  $('toggleGroups').textContent = (state.groups || []).some(g => collapsed.has(g.id)) ? 'Alle aufklappen' : 'Alle zuklappen';
+}
+
 function render() {
   const groups = state.groups || [];
-  let total = 0, done = 0, active = 0, failed = 0;
+  let total = 0, done = 0, active = 0, failed = 0, paused = 0, queued = 0;
   for (const d of allItems()) {
     total++;
     if (d.status === 'completed') done++;
     if (d.status === 'downloading') active++;
     if (d.status === 'failed') failed++;
+    if (d.status === 'paused') paused++;
+    if (d.status === 'queued') queued++;
   }
+  const busy = active + queued > 0;
+  if (wasBusy && !busy && paused === 0 && done > 0) chime();
+  wasBusy = busy;
+
   $('summary').textContent = total ? `${done}/${total} fertig · ${active} aktiv${failed ? ' · ' + failed + ' fehlgeschlagen' : ''}${selected.size ? ' · ' + selected.size + ' ausgewählt' : ''}` : 'Keine Downloads';
   $('empty').classList.toggle('hidden', Boolean(groups.length));
   const box = $('groups');
   box.textContent = '';
   for (const g of groups) box.append(groupEl(g));
+  updateButtons();
 }
 
 function groupEl(g) {

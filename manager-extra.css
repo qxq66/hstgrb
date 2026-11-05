@@ -10,3 +10,6 @@
 .row.failed .bar>span{background:var(--bad)}
 .row.selected{background:var(--accent-dim)}
 .notice-line{color:var(--warn);margin-left:10px}
+button.is-start{background:#1e5a2d;border-color:#2f7d43;color:#fff;font-weight:700}
+button.is-pause{background:#5a3a1c;border-color:#7a5128;color:#fff;font-weight:700}
+button.is-start:hover,button.is-pause:hover{filter:brightness(1.2)}
