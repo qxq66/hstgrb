@@ -18,17 +18,13 @@ scanTab=async function(tabId,scope='page',useCache=false){
 };
 
 async function migrateImxRule(){
-  const x=await chrome.storage.local.get(['rules','imxFixV1']);
-  if(x.imxFixV1)return;
+  const x=await chrome.storage.local.get(['rules','imxFixV2']);
+  if(x.imxFixV2)return;
   if(Array.isArray(x.rules)){
-    for(const r of x.rules){
-      if(r.id!=='imx-thumb')continue;
-      if(r.match)r.match.pattern=self.HG.fixImxPattern(r.match.pattern);
-      for(const t of r.transforms||[])if(t.pattern)t.pattern=self.HG.fixImxPattern(t.pattern);
-    }
+    for(const r of x.rules)if(r.id==='imx-thumb')self.HG.applyImxThumb(r);
     await chrome.storage.local.set({rules:x.rules});
   }
-  await chrome.storage.local.set({imxFixV1:true});
+  await chrome.storage.local.set({imxFixV2:true});
 }
 
 getSettings().then(configure).catch(console.error);
