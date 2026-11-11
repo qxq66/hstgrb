@@ -37,7 +37,7 @@
 <label class="toggle"><input id="showBadge" type="checkbox"><span><strong>Trefferzahl anzeigen</strong><small>Zeigt die Zahl gefundener Originale im Symbol.</small></span></label>
 <label class="toggle"><input id="debugMode" type="checkbox"><span><strong>Debug-Modus</strong><small>Protokolliert relevante Kandidaten, Transformationen und Fehler.</small></span></label>
 </div>
-<label>Auto-Scan-Whitelist<small>Eine URL oder ein regulärer Ausdruck pro Zeile, zum Beispiel <code>example\.com/thread</code>.</small><textarea id="whitelist" rows="8"></textarea></label>
+<label>Auto-Scan-Whitelist<small>Eine URL pro Zeile im Tampermonkey-Format, zum Beispiel <code>https://test.com/*</code> oder <code>*://*.test.com/*</code>.</small><textarea id="whitelist" rows="8"></textarea></label>
 </section>
 <section id="rules" class="view hidden">
 <div class="rules-layout">
@@ -62,6 +62,7 @@
 </div>
 </main>
 <script src="lib/core.js"></script>
+<script src="lib/fixes.js"></script>
 <script src="options.js"></script>
 </body>
 </html>
