@@ -2,6 +2,7 @@
 importScripts('lib/fixes.js');
 
 const IMX_RULES=[
+  {id:'imx-full',name:'IMX.to – Vollbild direkt',enabled:true,match:{field:'imageUrl',pattern:'^https?://(?:i|image)[.]imx[.]to/(?:u/)?i/',flags:'i'},source:'imageUrl',resolver:{type:'direct'},transforms:[]},
   {id:'imx-thumb',name:'IMX.to – Thumbnail direkt umwandeln',enabled:true,match:{field:'imageUrl',pattern:'^https?://t[0-9]*[.]imx[.]to/t/',flags:'i'},source:'imageUrl',resolver:{type:'direct'},transforms:[{type:'regex-replace',pattern:'^https?://t[0-9]*[.]imx[.]to/t/',flags:'i',replace:'https://i.imx.to/i/'}]},
   {id:'imx-link',name:'IMX.to – Landingpage',enabled:true,match:{field:'linkUrl',pattern:'^https?://(?:www[.])?(?:imx[.]to|img[.]yt)/(?:i/[A-Za-z0-9_-]+|img-[A-Za-z0-9_-]+)(?:[.]html)?(?:[?#].*)?$',flags:'i'},source:'linkUrl',resolver:{type:'fetch-css',selector:'img.img-full',attribute:'src'},transforms:[{type:'html-entities'}]}
 ];
@@ -31,13 +32,13 @@ scanTab=async function(tabId,scope='page',useCache=false){
 };
 
 async function migrateImxRule(){
-  const x=await chrome.storage.local.get(['rules','imxFixV2']);
-  if(x.imxFixV2)return;
+  const x=await chrome.storage.local.get(['rules','imxFixV3']);
+  if(x.imxFixV3)return;
   if(Array.isArray(x.rules)){
     const rest=x.rules.filter(r=>!String(r.id||'').startsWith('imx-'));
     await chrome.storage.local.set({rules:[...IMX_RULES.map(r=>self.HG.clone(r)),...rest]});
   }
-  await chrome.storage.local.set({imxFixV2:true});
+  await chrome.storage.local.set({imxFixV3:true});
 }
 
 getSettings().then(configure).catch(console.error);
