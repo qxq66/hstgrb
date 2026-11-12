@@ -35,6 +35,8 @@
 <label class="toggle"><input id="toolbarAutoScan" type="checkbox"><span><strong>Toolbar-Klick automatisch scannen</strong><small>Beim Klick auf das Symbol werden Bilder ermittelt und dem Download-Manager hinzugefügt.</small></span></label>
 <label class="toggle"><input id="autoScan" type="checkbox"><span><strong>Beim Laden whitelisted Seiten automatisch scannen</strong><small>Nur Seiten, deren URL einen Whitelist-Ausdruck erfüllt, werden automatisch verarbeitet.</small></span></label>
 <label class="toggle"><input id="showBadge" type="checkbox"><span><strong>Trefferzahl anzeigen</strong><small>Zeigt die Zahl gefundener Originale im Symbol.</small></span></label>
+<label class="toggle"><input id="dedupeGroup" type="checkbox"><span><strong>Gleichnamige Gruppe überspringen</strong><small>Existiert im Download-Manager bereits eine Gruppe mit demselben Namen, wird nichts hinzugefügt.</small></span></label>
+<label class="toggle"><input id="dedupeUrl" type="checkbox"><span><strong>Bereits vorhandene Bild-URLs überspringen</strong><small>Strenge Prüfung über alle Gruppen: Jede URL, die schon im Manager steht, wird nicht erneut hinzugefügt.</small></span></label>
 <label class="toggle"><input id="debugMode" type="checkbox"><span><strong>Debug-Modus</strong><small>Protokolliert relevante Kandidaten, Transformationen und Fehler.</small></span></label>
 </div>
 <label>Auto-Scan-Whitelist<small>Eine URL pro Zeile im Tampermonkey-Format, zum Beispiel <code>https://test.com/*</code> oder <code>*://*.test.com/*</code>.</small><textarea id="whitelist" rows="8"></textarea></label>

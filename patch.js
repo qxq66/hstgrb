@@ -1,6 +1,7 @@
 'use strict';
 const DEFAULTS_V2 = { concurrency: 1, naming: 'numbered', prefix: '', folder: '', folderMode: 'title', managerStartMode: 'paused' };
 Object.assign(self.HG.DEFAULT_SETTINGS, DEFAULTS_V2);
+Object.assign(self.HG.DEFAULT_SETTINGS, { dedupeGroup: true, dedupeUrl: false });
 
 async function migrateDefaults() {
   const x = await chrome.storage.local.get(['settings', 'defaultsV2']);
@@ -113,10 +114,25 @@ function getManager() {
 function addBatch(items, title, o = {}) {
   return serial(async () => {
     const H2 = self.HG;
-    const list = H2.unique((items || []).filter(x => x.url));
     const s = H2.settings({ ...(await getSettings()), ...o });
     const state = await loadManager();
-    if (!list.length) return { ok: true, state };
+    const normTitle = t => String(t || '').trim().toLowerCase();
+    const normUrl = u => { try { const x = new URL(u); x.hash = ''; return x.href; } catch { return String(u || ''); } };
+    const name = String(title || '').trim();
+
+    // Variante 1: Gruppe mit gleichem Namen vorhanden -> komplett überspringen
+    if (s.dedupeGroup && name && state.groups.some(g => normTitle(g.title) === normTitle(name)))
+      return { ok: true, state, skipped: 'group' };
+
+    let list = H2.unique((items || []).filter(x => x.url));
+
+    // Variante 2: URL in irgendeiner Gruppe vorhanden -> herausfiltern
+    if (s.dedupeUrl) {
+      const known = new Set(allItems(state).map(i => normUrl(i.url)));
+      list = list.filter(x => !known.has(normUrl(x.url)));
+    }
+    if (!list.length) return { ok: true, state, skipped: 'urls' };
+
     const folder = H2.folder(s, title);
     const status = s.managerStartMode === 'paused' ? 'paused' : 'queued';
     state.groups.push({
