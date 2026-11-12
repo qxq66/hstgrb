@@ -1,6 +1,19 @@
 'use strict';
 importScripts('lib/fixes.js');
 
+const IMX_RULES=[
+  {id:'imx-thumb',name:'IMX.to – Thumbnail direkt umwandeln',enabled:true,match:{field:'imageUrl',pattern:'^https?://t[0-9]*[.]imx[.]to/t/',flags:'i'},source:'imageUrl',resolver:{type:'direct'},transforms:[{type:'regex-replace',pattern:'^https?://t[0-9]*[.]imx[.]to/t/',flags:'i',replace:'https://i.imx.to/i/'}]},
+  {id:'imx-link',name:'IMX.to – Landingpage',enabled:true,match:{field:'linkUrl',pattern:'^https?://(?:www[.])?(?:imx[.]to|img[.]yt)/(?:i/[A-Za-z0-9_-]+|img-[A-Za-z0-9_-]+)(?:[.]html)?(?:[?#].*)?$',flags:'i'},source:'linkUrl',resolver:{type:'fetch-css',selector:'img.img-full',attribute:'src'},transforms:[{type:'html-entities'}]}
+];
+
+(function(){
+  const d=self.HG.DEFAULT_RULES;
+  for(const n of IMX_RULES){
+    const i=d.findIndex(r=>r.id===n.id);
+    if(i>=0)d[i]=self.HG.clone(n);else d.unshift(self.HG.clone(n));
+  }
+})();
+
 configure=async function(s){
   await chrome.action.setPopup({popup:s.toolbarAutoScan?'':'popup.html'});
   await chrome.action.setBadgeBackgroundColor({color:'#08676b'});
@@ -18,17 +31,13 @@ scanTab=async function(tabId,scope='page',useCache=false){
 };
 
 async function migrateImxRule(){
-  const x=await chrome.storage.local.get(['rules','imxFixV1']);
-  if(x.imxFixV1)return;
+  const x=await chrome.storage.local.get(['rules','imxFixV2']);
+  if(x.imxFixV2)return;
   if(Array.isArray(x.rules)){
-    for(const r of x.rules){
-      if(r.id!=='imx-thumb')continue;
-      if(r.match)r.match.pattern=self.HG.fixImxPattern(r.match.pattern);
-      for(const t of r.transforms||[])if(t.pattern)t.pattern=self.HG.fixImxPattern(t.pattern);
-    }
-    await chrome.storage.local.set({rules:x.rules});
+    const rest=x.rules.filter(r=>!String(r.id||'').startsWith('imx-'));
+    await chrome.storage.local.set({rules:[...IMX_RULES.map(r=>self.HG.clone(r)),...rest]});
   }
-  await chrome.storage.local.set({imxFixV1:true});
+  await chrome.storage.local.set({imxFixV2:true});
 }
 
 getSettings().then(configure).catch(console.error);
